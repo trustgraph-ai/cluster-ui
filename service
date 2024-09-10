@@ -2,6 +2,8 @@
 
 import _jsonnet as j
 from aiohttp import web
+import aiohttp
+import asyncio
 import logging
 import os
 import json
@@ -10,62 +12,66 @@ import yaml
 logger = logging.getLogger("service")
 logger.setLevel(logging.INFO)
 
-class Generator:
-
-    def __init__(self, config, base="./templates/"):
-        self.jsonnet_base = base
-        self.config = config
-
-    def process(self, config):
-
-        res = j.evaluate_snippet("config", config, import_callback=self.load)
-        return json.loads(res)
-
-    def load(self, dir, filename):
-
-        logger.info("Request jsonnet: %s %s", dir, filename)
-
-        if filename == "config.json" and dir == "":
-            print("config.json...")
-            path = os.path.join(".", dir, filename)
-            return str(path), self.config
-
-        try:
-            if dir:
-                path = os.path.join(".", dir, filename)
-            else:
-                path = os.path.join(self.jsonnet_base, filename)
-
-            logger.debug("Try: %s", path)
-            with open(path, "rb") as f:
-                logger.debug("Loaded: %s", path)
-                return str(path), f.read()
-
-        except:
-            path = os.path.join(self.jsonnet_base, filename)
-            logger.debug("Try: %s", path)
-            with open(path, "rb") as f:
-                logger.debug("Loaded: %s", path)
-                return str(path), f.read()
-
 class Api:
-    def __init__(self, patterns="", config=None):
+    def __init__(self, config=None):
 
         if config:
             self.config = config
         else:
             self.config = {}
 
-        self.patterns = patterns
-
         self.port = int(self.config.get("port", "8081"))
         self.app = web.Application(middlewares=[])
 
-        self.app.add_routes([web.post("/api/generate", self.generate)])
+#        self.app.add_routes([web.post("/api/generate", self.generate)])
+        self.app.router.add_route('GET', '/ws', self.websocket_handler)
         self.app.add_routes([web.get("/{tail:.*}", self.everything)])
+
+    async def websocket_handler(self, request):
+
+        print('Websocket connection starting')
+        ws = aiohttp.web.WebSocketResponse()
+        await ws.prepare(request)
+        print('Websocket connection ready')
+
+        async for msg in ws:
+            print(msg)
+
+            if msg.type == aiohttp.WSMsgType.TEXT:
+
+                try:
+                    obj = json.loads(msg.data)
+                except:
+                    await ws.send_json({
+                        "type": "error",
+                        "message": f"JSON parse fail",
+                    })
+                    continue
+
+                if obj["type"] == "close":
+                    await ws.close()
+                    break
+
+                if obj["type"] == "message":
+                    await asyncio.sleep(2)
+                    await ws.send_json({
+                        "type": "response",
+                        "text": obj["message"] + " answer",
+                    })
+                    continue
+
+                await ws.send_json({
+                    "type": "error",
+                    "message": f"Don't understand type {obj['type']}",
+                })
+
+
+        print('Websocket connection closed')
+        return ws
 
     async def everything(self, request):
 
+        print(request)
         if ".." in request.path:
             return web.HTTPNotFound()
 
@@ -128,13 +134,6 @@ class Api:
 
         web.run_app(self.app, port=self.port)
 
-print("Create all-patterns from templates...")
-with open("./templates/all-patterns.jsonnet", "r") as f:
-    cfg = f.read()
-gen = Generator("")
-patterns = gen.process(cfg)
-print("Done.")
-
-a = Api(patterns=json.dumps(patterns, indent=4))
+a = Api()
 a.run()
 

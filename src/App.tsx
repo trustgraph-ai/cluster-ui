@@ -1,12 +1,12 @@
 
 import './App.scss';
-import ConfigEditor from './config-editor/ConfigEditor';
+import ControlPanel from './control-panel/ControlPanel';
 
 function App() {
 
     return (
         <>
-            <ConfigEditor/>
+            <ControlPanel/>
         </>
     );
 
