@@ -13,6 +13,7 @@ from trustgraph.clients.embeddings_client import EmbeddingsClient
 from trustgraph.clients.graph_rag_client import GraphRagClient
 from trustgraph.clients.prompt_client import PromptClient
 from trustgraph.clients.triples_query_client import TriplesQueryClient
+from trustgraph.clients.llm_client import LlmClient
 
 logger = logging.getLogger("service")
 logger.setLevel(logging.INFO)
@@ -34,6 +35,7 @@ class Api:
         self.app.add_routes([web.get("/{tail:.*}", self.everything_else)])
 
         self.embed = EmbeddingsClient(pulsar_host=pulsar_host)
+        self.llm = LlmClient(pulsar_host=pulsar_host)
 
         print("Initialised")
 
@@ -98,15 +100,18 @@ class Api:
         if "message" not in obj:
             raise RuntimeError("Message has no message field")
 
-        resp = self.embed.request(obj["message"])
+        q = obj["message"]
+        print(">", q)
+#         resp = self.embed.request(obj["message"])
+        resp = self.llm.request(q)
 
-        print(resp)
+        print("<", resp)
 
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1)
 
         return {
             "type": "message",
-            "message": obj["message"] + " answer",
+            "message": resp,
         }
 
     async def everything_else(self, request):

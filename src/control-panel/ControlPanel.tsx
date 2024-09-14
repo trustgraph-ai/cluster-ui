@@ -31,7 +31,7 @@ const ControlPanel : React.FC<ControlPanelProps> =
         { id: 1, role: "ai", text: "Hello, nice to meet you" },
     ]);
 
-    const [text, setText] = useState<string>("x");
+    const [text, setText] = useState<string>("");
 
     const [connected, setConnected] = useState<boolean>(false);
     
@@ -118,8 +118,6 @@ const ControlPanel : React.FC<ControlPanelProps> =
         setText("");
     };
 
-    console.log("Text is ", text);
-
     return (
         <>
         <div className="">
@@ -143,7 +141,7 @@ const ControlPanel : React.FC<ControlPanelProps> =
         </div>
         <div>
         <input
-            type="text" defaultValue={text}
+            type="text" value={text}
             onChange={(e) => setText(e.target.value)}
         />
         <button onClick={() => click()}>
