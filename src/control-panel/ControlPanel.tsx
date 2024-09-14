@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect  } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 export interface Message {
     role : string;
@@ -37,20 +37,18 @@ const ControlPanel : React.FC<ControlPanelProps> =
     
     const ws = useRef<any>(null);
 
-    console.log("THERE ARE", messages.length, "MESSAGES");
-
-    const appendMessage = (role : string, text : string) => {
-        console.log("Append:", role, text);
-        console.log("Adding number", messages.length);
-        setMessages([
-            ...messages,
-            {
-                id: messages.length,
-                role: role,
-                text: text,
-            }
-       ]);
-    };
+    const appendMessage = 
+        (role : string, text : string, messages : Message[]) => {
+            setMessages([
+                ...messages,
+                {
+                    id: messages.length,
+                    role: role,
+                    text: text,
+                }
+           ]);
+        };
+        
 
     const connect = () => {
 
@@ -58,10 +56,10 @@ const ControlPanel : React.FC<ControlPanelProps> =
 
         ws.current = new WebSocket("/ws");
 
-        ws.current.addEventListener("open", (_event : any) => {
+        ws.current.onopen = (_event : any) => {
             console.log("Connected");
             setConnected(true);
-        });
+        };
 
         ws.current.addEventListener("close", (_event : any) => {
             console.log("Disconnected");
@@ -73,26 +71,29 @@ const ControlPanel : React.FC<ControlPanelProps> =
             console.log("Error");
         });
 
-        ws.current.addEventListener("message", (event : any) => {
+    };
+
+    useEffect( () => {
+
+        if (!ws.current) return;
+
+        ws.current.onmessage = (event : any) => {
 
             const message = (JSON.parse(event.data) as SocketDownstream);
 
-            console.log(">>", message);
             if (message.type == "message") {
                 if (message.message)
-                    appendMessage("ai", message.message);
+                    appendMessage("ai", message.message, messages);
             } else if (message.type == "error") {
                 if (message.error)
-                    appendMessage("ai", "Error: " + message.error);
+                    appendMessage("ai", "Error: " + message.error, messages);
             } else {
                 console.log("Unknown message, ignored");
             }
 
-            console.log(message);
+        };
 
-        });
-
-    }
+    }, [messages, text]);
 
     const reconnect = () => {
         console.log("Will reconnect...");
@@ -103,25 +104,21 @@ const ControlPanel : React.FC<ControlPanelProps> =
     }
 
     useEffect(() => {
-       console.log("RENDER");
         connect();
     }, []);
 
-    useEffect(() => {
-       console.log("RENDER WSCURRENT");
-    }, [ws.current]);
-
-    const click = () => {
+    const click = (e) => {
 
         ws.current.send(JSON.stringify({
             type: "message", message: text,
         }));
 
-        appendMessage("human", text);
+        appendMessage("human", text, messages);
 
         setText("");
+    };
 
-    }
+    console.log("Text is ", text);
 
     return (
         <>
