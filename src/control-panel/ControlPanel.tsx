@@ -37,8 +37,11 @@ const ControlPanel : React.FC<ControlPanelProps> =
     
     const ws = useRef<any>(null);
 
+    console.log("THERE ARE", messages.length, "MESSAGES");
+
     const appendMessage = (role : string, text : string) => {
         console.log("Append:", role, text);
+        console.log("Adding number", messages.length);
         setMessages([
             ...messages,
             {
@@ -70,24 +73,6 @@ const ControlPanel : React.FC<ControlPanelProps> =
             console.log("Error");
         });
 
-    }
-
-    const reconnect = () => {
-        console.log("Will reconnect...");
-        setTimeout(() => {
-            console.log("Reconnecting");
-            connect();
-        }, 2000);
-    }
-
-    useEffect(() => {
-        connect();
-    }, []);
-
-    useEffect(() => {
-
-        if (!ws.current) return;
-
         ws.current.addEventListener("message", (event : any) => {
 
             const message = (JSON.parse(event.data) as SocketDownstream);
@@ -107,18 +92,34 @@ const ControlPanel : React.FC<ControlPanelProps> =
 
         });
 
+    }
+
+    const reconnect = () => {
+        console.log("Will reconnect...");
+        setTimeout(() => {
+            console.log("Reconnecting");
+            connect();
+        }, 2000);
+    }
+
+    useEffect(() => {
+       console.log("RENDER");
+        connect();
     }, []);
 
+    useEffect(() => {
+       console.log("RENDER WSCURRENT");
+    }, [ws.current]);
+
     const click = () => {
-        setMessages([
-            ...messages,
-            { id: messages.length, role: "human", text: text }
-        ]);
-        setText("");
 
         ws.current.send(JSON.stringify({
             type: "message", message: text,
         }));
+
+        appendMessage("human", text);
+
+        setText("");
 
     }
 
