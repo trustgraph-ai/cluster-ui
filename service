@@ -9,23 +9,33 @@ import os
 import json
 import yaml
 
+from trustgraph.clients.embeddings_client import EmbeddingsClient
+from trustgraph.clients.graph_rag_client import GraphRagClient
+from trustgraph.clients.prompt_client import PromptClient
+from trustgraph.clients.triples_query_client import TriplesQueryClient
+
 logger = logging.getLogger("service")
 logger.setLevel(logging.INFO)
 
 class Api:
     def __init__(self, config=None):
 
-        if config:
-            self.config = config
-        else:
+        if not config:
             self.config = {}
+
+        self.config = config
+
+        pulsar_host = config.get("pulsar-host", "pulsar://localhost:6650")
 
         self.port = int(self.config.get("port", "8081"))
         self.app = web.Application(middlewares=[])
 
-#        self.app.add_routes([web.post("/api/generate", self.generate)])
         self.app.router.add_route('GET', '/ws', self.websocket_handler)
-        self.app.add_routes([web.get("/{tail:.*}", self.everything)])
+        self.app.add_routes([web.get("/{tail:.*}", self.everything_else)])
+
+        self.embed = EmbeddingsClient(pulsar_host=pulsar_host)
+
+        print("Initialised")
 
     async def websocket_handler(self, request):
 
@@ -34,7 +44,12 @@ class Api:
         await ws.prepare(request)
         print('Websocket connection ready')
 
+        handlers = {
+            "messageasd": self.handle_message
+        }
+
         async for msg in ws:
+
             print(msg)
 
             if msg.type == aiohttp.WSMsgType.TEXT:
@@ -48,30 +63,55 @@ class Api:
                     })
                     continue
 
-                if obj["type"] == "close":
-                    await ws.close()
-                    break
+                try:
 
-                if obj["type"] == "message":
-                    await asyncio.sleep(2)
-                    await ws.send_json({
-                        "type": "response",
-                        "text": obj["message"] + " answer",
-                    })
+                    if "type" not in obj:
+                        raise RuntimeError("Message has no type field")
+
+                    if obj["type"] == "close":
+                        await ws.close()
+                        break
+
+                    if obj["type"] not in handlers:
+                        raise RuntimeError("Don't understand that type")
+
+                    handler = handlers.get(obj["type"])
+                    resp = await handler(obj)
+
+                    # Code above must either set 'resp' or raise an exception
+
+                    await ws.send_json(resp)
                     continue
 
-                await ws.send_json({
-                    "type": "error",
-                    "message": f"Don't understand type {obj['type']}",
-                })
-
+                except Exception as e:
+                    await ws.send_json({
+                        "type": "error",
+                        "message": str(e),
+                    })
+                    continue
 
         print('Websocket connection closed')
         return ws
 
-    async def everything(self, request):
+    async def handle_message(self, obj):
 
-        print(request)
+        if "message" not in obj:
+            raise RuntimeError("Message has no message field")
+
+        resp = self.embed.request(obj["message"])
+
+        print(resp)
+
+        await asyncio.sleep(2)
+
+        return {
+            "type": "response",
+            "text": obj["message"] + " answer",
+        }
+
+    async def everything_else(self, request):
+
+        print(">", request.path)
         if ".." in request.path:
             return web.HTTPNotFound()
 
@@ -80,8 +120,6 @@ class Api:
                 return web.Response(
                     text=f.read(), content_type="text/html"
                 )
-
-        print(request.path)
 
         if request.path == "/api/patterns":
             return web.Response(
@@ -134,6 +172,10 @@ class Api:
 
         web.run_app(self.app, port=self.port)
 
-a = Api()
+config = {
+    "pulsar-host": "pulsar://localhost:6650"
+}
+
+a = Api(config=config)
 a.run()
 

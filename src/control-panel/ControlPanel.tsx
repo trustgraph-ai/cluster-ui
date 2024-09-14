@@ -24,20 +24,33 @@ const ControlPanel : React.FC<ControlPanelProps> =
     const [text, setText] = useState<string>("x");
 
     const [socketUrl, /* setSocketUrl */] = useState('/ws');
-    const { sendJsonMessage, lastJsonMessage, /* readyState */ } = useWebSocket(socketUrl);
+    const { sendJsonMessage, lastJsonMessage, /* readyState */ } =
+        useWebSocket(socketUrl);
 
- useEffect(() => {
-    if (lastJsonMessage) {
-        setMessages([
-            ...messages,
-            {
-                id: messages.length,
-                role: "ws",
-                text: (lastJsonMessage as any)['text']
-            }
-        ]);
-    }
-  }, [lastJsonMessage]);
+   useEffect(() => {
+      if (lastJsonMessage) {
+
+          console.log(lastJsonMessage);
+
+          if (! (lastJsonMessage.type)) {
+              console.log("Expecting type in message?!");
+              continue;
+          }
+
+          if (lastJsonMessage.type == "error") {
+          console.log("ERROR");
+          }
+
+          setMessages([
+              ...messages,
+              {
+                  id: messages.length,
+                  role: "ws",
+                  text: (lastJsonMessage as any)['text']
+              }
+          ]);
+      }
+    }, [lastJsonMessage]);
 
     const click = () => {
         setMessages([
