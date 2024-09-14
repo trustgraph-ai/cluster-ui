@@ -107,7 +107,7 @@ const ControlPanel : React.FC<ControlPanelProps> =
         connect();
     }, []);
 
-    const click = (e) => {
+    const click = () => {
 
         ws.current.send(JSON.stringify({
             type: "message", message: text,
