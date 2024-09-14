@@ -26,6 +26,15 @@ const ControlPanel : React.FC<ControlPanelProps> =
     ({ }) => 
 {
 
+    const [messages, setMessages] = useState<Message[]>([
+        { id: 0, role: "human", text: "Hello" },
+        { id: 1, role: "ai", text: "Hello, nice to meet you" },
+    ]);
+
+    const [text, setText] = useState<string>("x");
+
+    const [connected, setConnected] = useState<boolean>(false);
+    
     const ws = useRef<any>(null);
 
     const appendMessage = (role : string, text : string) => {
@@ -59,8 +68,6 @@ const ControlPanel : React.FC<ControlPanelProps> =
 
         ws.current.addEventListener("error", (_event : any) => {
             console.log("Error");
-            setConnected(false);
-            reconnect();
         });
 
     }
@@ -74,9 +81,7 @@ const ControlPanel : React.FC<ControlPanelProps> =
     }
 
     useEffect(() => {
-
         connect();
-
     }, []);
 
     useEffect(() => {
@@ -104,15 +109,6 @@ const ControlPanel : React.FC<ControlPanelProps> =
 
     }, []);
 
-    const [messages, setMessages] = useState<Message[]>([
-        { id: 0, role: "human", text: "Hello" },
-        { id: 1, role: "ai", text: "Hello, nice to meet you" },
-    ]);
-
-    const [text, setText] = useState<string>("x");
-
-    const [connected, setConnected] = useState<boolean>(false);
-    
     const click = () => {
         setMessages([
             ...messages,
