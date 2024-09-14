@@ -45,7 +45,7 @@ class Api:
         print('Websocket connection ready')
 
         handlers = {
-            "messageasd": self.handle_message
+            "message": self.handle_message
         }
 
         async for msg in ws:
@@ -105,8 +105,8 @@ class Api:
         await asyncio.sleep(2)
 
         return {
-            "type": "response",
-            "text": obj["message"] + " answer",
+            "type": "message",
+            "message": obj["message"] + " answer",
         }
 
     async def everything_else(self, request):

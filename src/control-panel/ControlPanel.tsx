@@ -1,11 +1,21 @@
 
-import React, { useState, useEffect  } from 'react';
-import useWebSocket /*,  { ReadyState } */ from 'react-use-websocket';
+import React, { useState, useRef, useEffect  } from 'react';
 
 export interface Message {
     role : string;
     text : string;
     id : number;
+};
+
+export interface SocketUpstream {
+    type : string;
+    message? : string;
+};
+
+export interface SocketDownstream {
+    type : string;
+    message? : string;
+    error? : string;
 };
 
 interface ControlPanelProps {
@@ -16,6 +26,84 @@ const ControlPanel : React.FC<ControlPanelProps> =
     ({ }) => 
 {
 
+    const ws = useRef<any>(null);
+
+    const appendMessage = (role : string, text : string) => {
+        console.log("Append:", role, text);
+        setMessages([
+            ...messages,
+            {
+                id: messages.length,
+                role: role,
+                text: text,
+            }
+       ]);
+    };
+
+    const connect = () => {
+
+        console.log("Connecting...");
+
+        ws.current = new WebSocket("/ws");
+
+        ws.current.addEventListener("open", (_event : any) => {
+            console.log("Connected");
+            setConnected(true);
+        });
+
+        ws.current.addEventListener("close", (_event : any) => {
+            console.log("Disconnected");
+            setConnected(false);
+            reconnect();
+        });
+
+        ws.current.addEventListener("error", (_event : any) => {
+            console.log("Error");
+            setConnected(false);
+            reconnect();
+        });
+
+    }
+
+    const reconnect = () => {
+        console.log("Will reconnect...");
+        setTimeout(() => {
+            console.log("Reconnecting");
+            connect();
+        }, 2000);
+    }
+
+    useEffect(() => {
+
+        connect();
+
+    }, []);
+
+    useEffect(() => {
+
+        if (!ws.current) return;
+
+        ws.current.addEventListener("message", (event : any) => {
+
+            const message = (JSON.parse(event.data) as SocketDownstream);
+
+            console.log(">>", message);
+            if (message.type == "message") {
+                if (message.message)
+                    appendMessage("ai", message.message);
+            } else if (message.type == "error") {
+                if (message.error)
+                    appendMessage("ai", "Error: " + message.error);
+            } else {
+                console.log("Unknown message, ignored");
+            }
+
+            console.log(message);
+
+        });
+
+    }, []);
+
     const [messages, setMessages] = useState<Message[]>([
         { id: 0, role: "human", text: "Hello" },
         { id: 1, role: "ai", text: "Hello, nice to meet you" },
@@ -23,54 +111,20 @@ const ControlPanel : React.FC<ControlPanelProps> =
 
     const [text, setText] = useState<string>("x");
 
-    const [socketUrl, /* setSocketUrl */] = useState('/ws');
-    const { sendJsonMessage, lastJsonMessage, /* readyState */ } =
-        useWebSocket(socketUrl);
-
-   useEffect(() => {
-      if (lastJsonMessage) {
-
-          console.log(lastJsonMessage);
-
-          if (! (lastJsonMessage.type)) {
-              console.log("Expecting type in message?!");
-              continue;
-          }
-
-          if (lastJsonMessage.type == "error") {
-          console.log("ERROR");
-          }
-
-          setMessages([
-              ...messages,
-              {
-                  id: messages.length,
-                  role: "ws",
-                  text: (lastJsonMessage as any)['text']
-              }
-          ]);
-      }
-    }, [lastJsonMessage]);
-
+    const [connected, setConnected] = useState<boolean>(false);
+    
     const click = () => {
         setMessages([
             ...messages,
             { id: messages.length, role: "human", text: text }
         ]);
         setText("");
-        sendJsonMessage({
-            "type": "message", "message": text,
-        });
+
+        ws.current.send(JSON.stringify({
+            type: "message", message: text,
+        }));
 
     }
-
-    useEffect(() => {
-
-//        const ws = new WebSocket("/ws");
-
-    }, []);
-
-
 
     return (
         <>
@@ -101,6 +155,9 @@ const ControlPanel : React.FC<ControlPanelProps> =
         <button onClick={() => click()}>
         Click!
         </button>
+        </div>
+        <div>
+        Connected: {connected.toString()}
         </div>
         </>
     );
