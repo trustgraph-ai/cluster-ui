@@ -4,7 +4,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import eventsReducer from './eventsSlice'
 
 // Don't understand the rationale here
-export const { extendedEvents } = eventsReducer;
+//export const { extendedEvents } = eventsReducer;
 
 export const store = configureStore({
     reducer: {

@@ -2,13 +2,13 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from './store'
 
 interface Event {
-    state: string
+    status: string
 };
 
 // Define a type for the slice state
-interface EventsState {
+interface EventState {
     value: Event[]
-}
+};
 
 // Define the initial state using that type
 const initialState: EventState = {
@@ -23,20 +23,20 @@ const initialState: EventState = {
             "status": "Returned",
         }
     ]
-}
+};
 
 export const eventsSlice = createSlice({
     name: 'events',
 
     // `createSlice` will infer the state type from the `initialState` argument
-    initialState: initialState,
+    initialState,
 
     reducers: {
         extend: (state, action: PayloadAction<string>) => {
             state.value.push({ status: action.payload });
         },
     },
-})
+});
 
 export const {
     extend
