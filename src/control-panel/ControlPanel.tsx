@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, FormEvent } from 'react';
 
 export interface Message {
     role : string;
@@ -20,7 +20,6 @@ export interface SocketDownstream {
 
 interface ControlPanelProps {
 }
-
 
 const ControlPanel : React.FC<ControlPanelProps> =
     ({ }) => 
@@ -48,7 +47,6 @@ const ControlPanel : React.FC<ControlPanelProps> =
                 }
            ]);
         };
-        
 
     const connect = () => {
 
@@ -118,39 +116,48 @@ const ControlPanel : React.FC<ControlPanelProps> =
         setText("");
     };
 
+    const submit = (e : FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+    };
+
     return (
         <>
-        <div className="">
-        Messages:
-        <table>
-        <tbody>
-        {
-            messages.map(
-                (msg) => 
-                {
-                    return (
-                        <tr key={msg.id}>
-                        <td>{msg.role}</td>
-                        <td>{msg.text}</td>
-                        </tr> );
+            <div className="">
+                Messages:
+                <table>
+                    <tbody>
+                    {
+                        messages.map(
+                            (msg) => 
+                            {
+                                return (
+                                    <tr
+                                        key={msg.id}>
+                                        <td>{msg.role}</td>
+                                        <td>{msg.text}</td>
+                                    </tr> );
+                                }
+                            )
                     }
-                )
-        }
-        </tbody>
-        </table>
-        </div>
-        <div>
-        <input
-            type="text" value={text}
-            onChange={(e) => setText(e.target.value)}
-        />
-        <button onClick={() => click()}>
-        Click!
-        </button>
-        </div>
-        <div>
-        Connected: {connected.toString()}
-        </div>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <form onSubmit={(e) => submit(e)}>
+                    <label htmlFor="text">Text:</label>
+                    <input
+                        type="text" value={text}
+                        id="text"
+                        onChange={(e) => setText(e.target.value)}
+                    />
+                    <button onClick={() => click()}>
+                        Click!
+                    </button>
+                </form>
+            </div>
+            <div>
+                Connected: {connected.toString()}
+            </div>
         </>
     );
 
