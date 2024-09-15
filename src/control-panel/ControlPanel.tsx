@@ -1,7 +1,9 @@
 
-import React, { useState, useRef, useEffect, FormEvent } from 'react';
+import React, { useState, useRef, FormEvent } from 'react';
 
 import { useMessageStore } from '../state/MessageStore';
+
+import { Message, CommandSocket } from './command-socket';
 
 export interface SocketUpstream {
     type : string;
@@ -24,13 +26,9 @@ const ControlPanel : React.FC<ControlPanelProps> =
     const messages = useMessageStore((state) => state.messages);
     const add = useMessageStore((state) => state.add);
 
-
     const [text, setText] = useState<string>("");
-
     const [connected, setConnected] = useState<boolean>(false);
     
-    const ws = useRef<any>(null);
-
     const appendMessage =
         (role : string, text : string) => {
             add({
@@ -40,72 +38,27 @@ const ControlPanel : React.FC<ControlPanelProps> =
             });
         };
 
-    const connect = () => {
+    const ws = useRef<CommandSocket | null>(null);
 
-        console.log("Connecting...");
-
-        ws.current = new WebSocket("/ws");
-
-        ws.current.onopen = (_event : any) => {
-            console.log("Connected");
-            setConnected(true);
-        };
-
-        ws.current.addEventListener("close", (_event : any) => {
-            console.log("Disconnected");
-            setConnected(false);
-            reconnect();
-        });
-
-        ws.current.addEventListener("error", (_event : any) => {
-            console.log("Error");
-        });
-
+    if (ws.current === null) {
+        ws.current = new CommandSocket(
+            "/ws",
+            (connected : boolean) => { setConnected(connected); },
+            (message : Message) => {
+                appendMessage(message.role, message.text);
+            },
+        )
     };
-
-    useEffect( () => {
-
-        if (!ws.current) return;
-
-        ws.current.onmessage = (event : any) => {
-
-            const message = (JSON.parse(event.data) as SocketDownstream);
-
-            if (message.type == "message") {
-                if (message.message)
-                    appendMessage("ai", message.message);
-            } else if (message.type == "error") {
-                if (message.error)
-                    appendMessage("ai", "Error: " + message.error);
-            } else {
-                console.log("Unknown message, ignored");
-            }
-
-        };
-
-    }, [messages, text]);
-
-    const reconnect = () => {
-        console.log("Will reconnect...");
-        setTimeout(() => {
-            console.log("Reconnecting");
-            connect();
-        }, 2000);
-    }
-
-    useEffect(() => {
-        connect();
-    }, []);
 
     const click = () => {
 
-        ws.current.send(JSON.stringify({
-            type: "message", message: text,
-        }));
+        if (!ws.current) return;
+
+        ws.current.sendMessage(text);
 
         appendMessage("human", text);
-
         setText("");
+
     };
 
     const submit = (e : FormEvent<HTMLFormElement>) => {

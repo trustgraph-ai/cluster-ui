@@ -61,7 +61,9 @@ class Api:
                 except:
                     await ws.send_json({
                         "type": "error",
-                        "message": f"JSON parse fail",
+                        "body": {
+                            "message": f"JSON parse fail",
+                        }
                     })
                     continue
 
@@ -74,11 +76,14 @@ class Api:
                         await ws.close()
                         break
 
+                    if "body" not in obj:
+                        raise RuntimeError("Message has no body field")
+
                     if obj["type"] not in handlers:
                         raise RuntimeError("Don't understand that type")
 
                     handler = handlers.get(obj["type"])
-                    resp = await handler(obj)
+                    resp = await handler(obj["body"])
 
                     # Code above must either set 'resp' or raise an exception
 
@@ -88,7 +93,9 @@ class Api:
                 except Exception as e:
                     await ws.send_json({
                         "type": "error",
-                        "message": str(e),
+                        "body": {
+                            "message": str(e),
+                        }
                     })
                     continue
 
@@ -97,12 +104,11 @@ class Api:
 
     async def handle_message(self, obj):
 
-        if "message" not in obj:
+        if "text" not in obj:
             raise RuntimeError("Message has no message field")
 
-        q = obj["message"]
+        q = obj["text"]
         print(">", q)
-#         resp = self.embed.request(obj["message"])
         resp = self.llm.request(q)
 
         print("<", resp)
@@ -111,7 +117,10 @@ class Api:
 
         return {
             "type": "message",
-            "message": resp,
+            "body": {
+                "role": "ai",
+                "text": resp,
+            },
         }
 
     async def everything_else(self, request):
