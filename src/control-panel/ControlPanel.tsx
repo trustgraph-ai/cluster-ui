@@ -24,12 +24,6 @@ const ControlPanel : React.FC<ControlPanelProps> =
     const messages = useMessageStore((state) => state.messages);
     const add = useMessageStore((state) => state.add);
 
-/*
-    const [messages, setMessages] = useState<Message[]>([
-        { id: 0, role: "human", text: "Hello" },
-        { id: 1, role: "ai", text: "Hello, nice to meet you" },
-    ]);
-    */
 
     const [text, setText] = useState<string>("");
 
