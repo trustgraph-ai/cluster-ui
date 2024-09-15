@@ -5,6 +5,7 @@ import Grid from '@mui/material/Grid2';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import { MuiMarkdown } from 'mui-markdown';
 
 import { Message } from '../state/MessageStore';
 
@@ -25,7 +26,9 @@ const MessageCard : React.FC<{
               {message.role}
             </Typography>
             <Typography variant="body2">
-              {message.text}
+                <MuiMarkdown>
+                    {message.text}
+                </MuiMarkdown>
             </Typography>
           </CardContent>
         </Card>
@@ -42,8 +45,8 @@ const ChatMessage : React.FC<MessageProps> =
                 <Grid size={10}>
                     <MessageCard
                         message={message}
-                        bg="text.primary"
-                        fg="white"
+                        bg="#f0f8ff"
+                        fg="text.primary"
                     />
                 </Grid>
                 <Grid size={2}>
