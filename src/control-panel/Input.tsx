@@ -1,6 +1,10 @@
 
 import React, { useState, FormEvent } from 'react';
 
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+
 interface InputProps {
     onSubmit : (text : string) => void;
     onClearHistory : () => void;
@@ -21,22 +25,35 @@ const Input : React.FC<InputProps> =
             <div>
                 <form onSubmit={(e) => submit(e)}>
                     <label htmlFor="text">Text:</label>
+{
+/*
                     <input
                         type="text" value={text}
                         id="text"
                         onChange={(e) => setText(e.target.value)}
                     />
-                    <button onClick={() => {
+*/
+}
+
+<TextField id="outlined-basic" label="Outlined" variant="outlined"
+value={text}
+                        onChange={(e) => setText(e.target.value)}
+/>
+
+<ButtonGroup variant="contained" aria-label="Basic button group">
+
+                    <Button onClick={() => {
                             onSubmit(text);
                             setText("");
                     }}>
                         Answer
-                    </button>
-                    <button onClick={() => {
+                    </Button>
+                    <Button onClick={() => {
                             onClearHistory();
                     }}>
                         Clear history
-                    </button>
+                    </Button>
+                    </ButtonGroup>
                 </form>
             </div>
         </>
