@@ -1,12 +1,12 @@
 
 import React, { useState, useRef } from 'react';
 
+import Stack from '@mui/material/Stack';
+
 import { useMessageStore } from '../state/MessageStore';
-
 import { Message, CommandSocket } from '../active/command-socket';
-
 import Input from './Input';
-import MessageHistory from './MessageHistory';
+import ChatMessageHistory from './ChatMessageHistory';
 
 interface ControlPanelProps {
 }
@@ -44,20 +44,22 @@ const ControlPanel : React.FC<ControlPanelProps> =
 
     return (
         <>
-            <MessageHistory/>
-            <Input
-                onSubmit={
-                    (text : string) => {
-                        if (!ws.current) return;
-                        ws.current.sendMessage(text);
-                        appendMessage("human", text);
+            <Stack spacing={2}>
+                <ChatMessageHistory/>
+                <Input
+                    onSubmit={
+                        (text : string) => {
+                            if (!ws.current) return;
+                            ws.current.sendMessage(text);
+                            appendMessage("human", text);
+                        }
                     }
-                }
-                onClearHistory={ () => { clear(); } }
-            />
-            <div>
-                Connected: {connected.toString()}
-            </div>
+                    onClearHistory={ () => { clear(); } }
+                />
+                <div>
+                    Connected: {connected.toString()}
+                </div>
+            </Stack>
         </>
     );
 

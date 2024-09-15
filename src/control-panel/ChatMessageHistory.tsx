@@ -1,13 +1,15 @@
 
 import React from 'react';
 
+import Stack from '@mui/material/Stack';
+
 import { useMessageStore } from '../state/MessageStore';
 import ChatMessage from './ChatMessage';
 
-interface MessageHistoryProps {
+interface ChatMessageHistoryProps {
 }
 
-const MessageHistory : React.FC<MessageHistoryProps> =
+const ChatMessageHistory : React.FC<ChatMessageHistoryProps> =
     ({ }) => 
 {
 
@@ -15,7 +17,7 @@ const MessageHistory : React.FC<MessageHistoryProps> =
 
     return (
         <>
-            <div>
+            <Stack spacing={2}>
                 Messages:
                 {
                     messages.map(
@@ -27,11 +29,11 @@ const MessageHistory : React.FC<MessageHistoryProps> =
                         }
                     )
                 }
-            </div>
+            </Stack>
         </>
     );
 
 }
 
-export default MessageHistory;
+export default ChatMessageHistory;
 
