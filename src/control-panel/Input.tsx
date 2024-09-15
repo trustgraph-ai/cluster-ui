@@ -25,34 +25,24 @@ const Input : React.FC<InputProps> =
             <div>
                 <form onSubmit={(e) => submit(e)}>
                     <label htmlFor="text">Text:</label>
-{
-/*
-                    <input
-                        type="text" value={text}
-                        id="text"
+                    <TextField id="text" label="Outlined" variant="outlined"
+                        value={text}
                         onChange={(e) => setText(e.target.value)}
                     />
-*/
-}
-
-<TextField id="outlined-basic" label="Outlined" variant="outlined"
-value={text}
-                        onChange={(e) => setText(e.target.value)}
-/>
-
-<ButtonGroup variant="contained" aria-label="Basic button group">
-
-                    <Button onClick={() => {
-                            onSubmit(text);
-                            setText("");
-                    }}>
-                        Answer
-                    </Button>
-                    <Button onClick={() => {
-                            onClearHistory();
-                    }}>
-                        Clear history
-                    </Button>
+                    <ButtonGroup
+                        variant="contained"
+                    >
+                        <Button onClick={() => {
+                                onSubmit(text);
+                                setText("");
+                        }}>
+                            Answer
+                        </Button>
+                        <Button onClick={() => {
+                                onClearHistory();
+                        }}>
+                            Clear history
+                        </Button>
                     </ButtonGroup>
                 </form>
             </div>

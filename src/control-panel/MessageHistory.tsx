@@ -2,8 +2,7 @@
 import React from 'react';
 
 import { useMessageStore } from '../state/MessageStore';
-
-//import { Message, CommandSocket } from './command-socket';
+import ChatMessage from './ChatMessage';
 
 interface MessageHistoryProps {
 }
@@ -18,23 +17,16 @@ const MessageHistory : React.FC<MessageHistoryProps> =
         <>
             <div>
                 Messages:
-                <table>
-                    <tbody>
-                    {
-                        messages.map(
-                            (msg) => 
-                            {
-                                return (
-                                    <tr
-                                        key={msg.id}>
-                                        <td>{msg.role}</td>
-                                        <td>{msg.text}</td>
-                                    </tr> );
-                                }
-                            )
-                    }
-                    </tbody>
-                </table>
+                {
+                    messages.map(
+                        (msg) => 
+                        {
+                            return (
+                                <ChatMessage key={msg.id} message={msg}/>
+                            );
+                        }
+                    )
+                }
             </div>
         </>
     );
