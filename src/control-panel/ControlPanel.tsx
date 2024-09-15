@@ -1,20 +1,12 @@
 
-import React, { useState, useRef, FormEvent } from 'react';
+import React, { useState, useRef } from 'react';
 
 import { useMessageStore } from '../state/MessageStore';
 
-import { Message, CommandSocket } from './command-socket';
+import { Message, CommandSocket } from '../active/command-socket';
 
-export interface SocketUpstream {
-    type : string;
-    message? : string;
-};
-
-export interface SocketDownstream {
-    type : string;
-    message? : string;
-    error? : string;
-};
+import Input from './Input';
+import MessageHistory from './MessageHistory';
 
 interface ControlPanelProps {
 }
@@ -25,8 +17,8 @@ const ControlPanel : React.FC<ControlPanelProps> =
 
     const messages = useMessageStore((state) => state.messages);
     const add = useMessageStore((state) => state.add);
+    const clear = useMessageStore((state) => state.clear);
 
-    const [text, setText] = useState<string>("");
     const [connected, setConnected] = useState<boolean>(false);
     
     const appendMessage =
@@ -50,56 +42,19 @@ const ControlPanel : React.FC<ControlPanelProps> =
         )
     };
 
-    const click = () => {
-
-        if (!ws.current) return;
-
-        ws.current.sendMessage(text);
-
-        appendMessage("human", text);
-        setText("");
-
-    };
-
-    const submit = (e : FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-    };
-
     return (
         <>
-            <div className="">
-                Messages:
-                <table>
-                    <tbody>
-                    {
-                        messages.map(
-                            (msg) => 
-                            {
-                                return (
-                                    <tr
-                                        key={msg.id}>
-                                        <td>{msg.role}</td>
-                                        <td>{msg.text}</td>
-                                    </tr> );
-                                }
-                            )
+            <MessageHistory/>
+            <Input
+                onSubmit={
+                    (text : string) => {
+                        if (!ws.current) return;
+                        ws.current.sendMessage(text);
+                        appendMessage("human", text);
                     }
-                    </tbody>
-                </table>
-            </div>
-            <div>
-                <form onSubmit={(e) => submit(e)}>
-                    <label htmlFor="text">Text:</label>
-                    <input
-                        type="text" value={text}
-                        id="text"
-                        onChange={(e) => setText(e.target.value)}
-                    />
-                    <button onClick={() => click()}>
-                        Click!
-                    </button>
-                </form>
-            </div>
+                }
+                onClearHistory={ () => { clear(); } }
+            />
             <div>
                 Connected: {connected.toString()}
             </div>

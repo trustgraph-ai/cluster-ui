@@ -12,6 +12,7 @@ export interface Message {
 interface MessageState {
   messages: Message[];
   add: (message : Message) => void;
+  clear: () => void;
 }
 
 export const useMessageStore = create<MessageState>()(
@@ -22,6 +23,10 @@ export const useMessageStore = create<MessageState>()(
                 add: (msg) =>
                     set((state) => ({
                         messages: [...state.messages, msg],
+                    })),
+                clear: () =>
+                    set(() => ({
+                        messages: [],
                     }))
             }),
             {

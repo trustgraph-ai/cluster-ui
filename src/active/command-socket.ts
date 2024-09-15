@@ -25,9 +25,9 @@ export class CommandSocket {
     ) {
     console.log("Init CommandSocket");
         this.url = url;
-        this.connect();
         this.onStateChange = onStateChange;
         this.onMessage = onMessage;
+        this.connect();
     }
 
     onStateChange : (connected: boolean) => void;
