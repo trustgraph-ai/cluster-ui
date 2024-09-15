@@ -1,11 +1,7 @@
 
 import React, { useState, useRef, useEffect, FormEvent } from 'react';
 
-export interface Message {
-    role : string;
-    text : string;
-    id : number;
-};
+import { useMessageStore } from '../state/MessageStore';
 
 export interface SocketUpstream {
     type : string;
@@ -25,10 +21,15 @@ const ControlPanel : React.FC<ControlPanelProps> =
     ({ }) => 
 {
 
+    const messages = useMessageStore((state) => state.messages);
+    const add = useMessageStore((state) => state.add);
+
+/*
     const [messages, setMessages] = useState<Message[]>([
         { id: 0, role: "human", text: "Hello" },
         { id: 1, role: "ai", text: "Hello, nice to meet you" },
     ]);
+    */
 
     const [text, setText] = useState<string>("");
 
@@ -36,16 +37,13 @@ const ControlPanel : React.FC<ControlPanelProps> =
     
     const ws = useRef<any>(null);
 
-    const appendMessage = 
-        (role : string, text : string, messages : Message[]) => {
-            setMessages([
-                ...messages,
-                {
-                    id: messages.length,
-                    role: role,
-                    text: text,
-                }
-           ]);
+    const appendMessage =
+        (role : string, text : string) => {
+            add({
+                id: messages.length,
+                role: role,
+                text: text,
+            });
         };
 
     const connect = () => {
@@ -81,10 +79,10 @@ const ControlPanel : React.FC<ControlPanelProps> =
 
             if (message.type == "message") {
                 if (message.message)
-                    appendMessage("ai", message.message, messages);
+                    appendMessage("ai", message.message);
             } else if (message.type == "error") {
                 if (message.error)
-                    appendMessage("ai", "Error: " + message.error, messages);
+                    appendMessage("ai", "Error: " + message.error);
             } else {
                 console.log("Unknown message, ignored");
             }
@@ -111,7 +109,7 @@ const ControlPanel : React.FC<ControlPanelProps> =
             type: "message", message: text,
         }));
 
-        appendMessage("human", text, messages);
+        appendMessage("human", text);
 
         setText("");
     };
