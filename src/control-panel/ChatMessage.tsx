@@ -22,7 +22,7 @@ const MessageCard : React.FC<{
         <Card sx={{ 'bgcolor': bg, 'color': fg }}>
           <CardContent>
             <Typography
-                gutterBottom sx={{ color: 'text.secondary', fontSize: 10 }}>
+                gutterBottom sx={{ color: fg, fontSize: 10 }}>
               {message.role}
             </Typography>
             <Typography variant="body2">

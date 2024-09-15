@@ -1,12 +1,13 @@
 
-import React, { useState, useRef } from 'react';
+import React from 'react';
 
-import Stack from '@mui/material/Stack';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import TabPanel from '@mui/lab/TabPanel';
+import TabList from '@mui/lab/TabList';
+import TabContext from '@mui/lab/TabContext';
 
-import { useMessageStore } from '../state/MessageStore';
-import { Message, CommandSocket } from '../active/command-socket';
-import Input from './Input';
-import ChatMessageHistory from './ChatMessageHistory';
+import ChatPanel from './ChatPanel';
 
 interface ControlPanelProps {
 }
@@ -15,52 +16,25 @@ const ControlPanel : React.FC<ControlPanelProps> =
     ({ }) => 
 {
 
-    const messages = useMessageStore((state) => state.messages);
-    const add = useMessageStore((state) => state.add);
-    const clear = useMessageStore((state) => state.clear);
+    const [value, setValue] = React.useState('chat');
 
-    const [connected, setConnected] = useState<boolean>(false);
-    
-    const appendMessage =
-        (role : string, text : string) => {
-            add({
-                id: messages.length,
-                role: role,
-                text: text,
-            });
-        };
-
-    const ws = useRef<CommandSocket | null>(null);
-
-    if (ws.current === null) {
-        ws.current = new CommandSocket(
-            "/ws",
-            (connected : boolean) => { setConnected(connected); },
-            (message : Message) => {
-                appendMessage(message.role, message.text);
-            },
-        )
+    const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
+        setValue(newValue);
     };
 
     return (
-        <>
-            <Stack spacing={2}>
-                <ChatMessageHistory/>
-                <Input
-                    onSubmit={
-                        (text : string) => {
-                            if (!ws.current) return;
-                            ws.current.sendMessage(text);
-                            appendMessage("human", text);
-                        }
-                    }
-                    onClearHistory={ () => { clear(); } }
-                />
-                <div>
-                    Connected: {connected.toString()}
-                </div>
-            </Stack>
-        </>
+        <Box sx={{ width: '100%' }}>
+            <TabContext value={value}>    
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <TabList onChange={handleChange}>
+                        <Tab label="Chat" value="chat"/>
+                    </TabList>
+                </Box>
+                <TabPanel value="chat">
+                    <ChatPanel/>
+                </TabPanel>
+            </TabContext>
+        </Box>
     );
 
 }
