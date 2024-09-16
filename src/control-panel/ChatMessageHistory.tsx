@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-import Grid from '@mui/material/Grid2';
+import Box from '@mui/material/Box';
 
 import { useMessageStore } from '../state/MessageStore';
 import ChatMessage from './ChatMessage';
@@ -17,8 +17,7 @@ const ChatMessageHistory : React.FC<ChatMessageHistoryProps> =
 
     return (
         <>
-            <h3>Messages</h3>
-            <Grid container spacing={1}>
+            <Box sx={{ display: 'flex',  flexDirection: 'column' }}>
                 {
                     messages.map(
                         (msg) => 
@@ -29,7 +28,7 @@ const ChatMessageHistory : React.FC<ChatMessageHistoryProps> =
                         }
                     )
                 }
-            </Grid>
+            </Box>
         </>
     );
 

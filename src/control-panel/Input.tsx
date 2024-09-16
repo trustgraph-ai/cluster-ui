@@ -26,9 +26,8 @@ const Input : React.FC<InputProps> =
                 <form onSubmit={(e) => submit(e)}>
                     <Stack direction="row" spacing={1}>
                         <Box>
-                        <label htmlFor="text">Text:</label>
                         <TextField
-                            id="text" label="Outlined" variant="outlined"
+                            id="text" label="Text" variant="outlined"
                             value={text}
                             onChange={(e) => setText(e.target.value)}
                         />

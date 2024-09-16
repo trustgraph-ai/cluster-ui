@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-import Grid from '@mui/material/Grid2';
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -42,29 +42,35 @@ const ChatMessage : React.FC<MessageProps> =
     if (message.role === "ai") {
         return (
             <>
-                <Grid size={10}>
+                <Box
+                    sx={{
+                        maxWidth: "70%", alignSelf: 'flex-start',
+                        margin: '0.4rem'
+                    }}
+                >
                     <MessageCard
                         message={message}
                         bg="#f0f8ff"
                         fg="text.primary"
                     />
-                </Grid>
-                <Grid size={2}>
-                </Grid>
+                </Box>
             </>
         );
     } else {
         return (
             <>
-                <Grid size={2}>
-                </Grid>
-                <Grid size={10}>
+                <Box
+                    sx={{
+                        maxWidth: "70%", alignSelf: 'flex-end',
+                        margin: '0.4rem'
+                    }}
+                >
                     <MessageCard
                         message={message}
                         bg="info.main"
                         fg="white"
                     />
-                </Grid>
+                </Box>
             </>
         );
     }
